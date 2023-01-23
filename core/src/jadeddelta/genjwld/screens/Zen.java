@@ -7,6 +7,10 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import jadeddelta.genjwld.GenjeweledGame;
 import jadeddelta.genjwld.gameplay_elements.Board;
 
+/**
+ * The Zen difficulty screen, which includes always available matches
+ * and infinite level design.
+ */
 public class Zen implements Screen {
     final GenjeweledGame game;
     OrthographicCamera camera;

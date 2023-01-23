@@ -20,4 +20,12 @@ public class Gem {
         GemColor color = GEM_COLORS.random();
         return new Gem(color, GemEnhancement.NONE);
     }
+
+    public GemColor getColor() {
+        return color;
+    }
+
+    public GemEnhancement getEnhancement() {
+        return enhancement;
+    }
 }

@@ -11,6 +11,7 @@ public class DesktopLauncher {
 		config.setForegroundFPS(60);
 		config.setTitle("genjeweled");
 		config.setWindowedMode(1600, 900);
+		config.setWindowIcon("icon32x32.png");
 		new Lwjgl3Application(new GenjeweledGame(), config);
 	}
 }
