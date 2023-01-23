@@ -5,14 +5,18 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.ScreenUtils;
 import jadeddelta.genjwld.GenjeweledGame;
+import jadeddelta.genjwld.gameplay_elements.Board;
 
 public class Zen implements Screen {
     final GenjeweledGame game;
     OrthographicCamera camera;
+    Board board;
+
     public Zen(GenjeweledGame game) {
         this.game = game;
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1600, 900);
+        this.board = Board.defaultBoard();
     }
 
     @Override
@@ -26,6 +30,9 @@ public class Zen implements Screen {
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
+        game.batch.begin();
+        board.render(delta, game.batch);
+        game.batch.end();
     }
 
     @Override
