@@ -1,9 +1,11 @@
 package jadeddelta.genjwld.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.ScreenUtils;
+import jadeddelta.genjwld.GemInputProcessor;
 import jadeddelta.genjwld.GenjeweledGame;
 import jadeddelta.genjwld.gameplay_elements.Board;
 
@@ -21,6 +23,8 @@ public class Zen implements Screen {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1600, 900);
         this.board = Board.defaultBoard();
+
+        Gdx.input.setInputProcessor(new GemInputProcessor(board));
     }
 
     @Override

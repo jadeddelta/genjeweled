@@ -1,6 +1,5 @@
 package jadeddelta.genjwld.gameplay_elements;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 
 public class Gem {
