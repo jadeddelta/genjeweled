@@ -13,13 +13,17 @@ public class Board {
 
     private Texture redGem, blueGem, greenGem, purpleGem, whiteGem, yellowGem, orangeGem;
     private Texture selectedGem;
+
     private int selectX, selectY;
+    private int swapX, swapY;
 
-    //TODO: all of these will be changed for the sake of customizable boards
-    private final int WIDTH = 600;
-    private final int HEIGHT = 600;
-
+    // TODO: eventually turn this into customizable board logic
+    private final int BOARD_X_LENGTH = 8;
+    private final int BOARD_Y_LENGTH = 8;
     private final int SLOT_WIDTH = 75;
+
+    private final int minX, minY;
+    private final int maxX, maxY;
 
     public Board(Array<Array<Gem>> gems) {
         this.gems = gems;
@@ -32,8 +36,15 @@ public class Board {
         this.orangeGem = new Texture(Gdx.files.internal("gems/orangegem.png"));
         this.selectedGem = new Texture(Gdx.files.internal("effects/selected.png"));
 
-        this.selectX = 0;
-        this.selectY = 0;
+        this.selectX = -1;
+        this.selectY = -1;
+        this.swapX = -1;
+        this.swapY = -1;
+
+        this.minX = 500;
+        this.minY = 150;
+        this.maxX = minX + (BOARD_X_LENGTH * SLOT_WIDTH);
+        this.maxY = minY + (BOARD_Y_LENGTH * SLOT_WIDTH);
     }
 
     /**
@@ -48,45 +59,60 @@ public class Board {
                 gemArray.add(Gem.randomGem());
             }
             gems.add(gemArray);
-
         }
         return new Board(gems);
     }
 
     public void selectGem(int x, int y) {
-        int minX = 500;
-        int minY = 150;
-        int selectedX = (x - minX) / SLOT_WIDTH;
-        int selectedY = (y - minY) / SLOT_WIDTH;
+        // select and swap have the same logic
 
-        if (selectedX < 0 || selectedY < 0) {
-            selectedX = -1;
-            selectedY = -1;
+        if ((x > minX && y > minY)
+                && (x < maxX && y < maxY)) {
+            int selectedX = (x - minX) / SLOT_WIDTH;
+            int selectedY = (y - minY) / SLOT_WIDTH;
+
+            if (selectX >= 0 && selectY >= 0) {
+                swapX = selectedX;
+                swapY = selectedY;
+                return;
+            }
+
+            selectX = selectedX;
+            selectY = selectedY;
+            return;
         }
-        if (selectedX >= 8 || selectedY >= 8) {
-            selectedX = -1;
-            selectedY = -1;
-        }
-        // special case cause x in (-1, 0) will mean selectedX truncated to 0
-        if ((selectedX == 0 || selectedY == 0) && (x < minX || y < minY)) {
-            selectedX = -1;
-            selectedY = -1;
-        }
-        selectX = selectedX;
-        selectY = selectedY;
+
+        selectX = -1;
+        selectY = -1;
+        swapX = -1;
+        swapY = -1;
+    }
+
+    public void swapGem() {
+        Gem selectedGem = gems.get(selectY).get(selectX);
+        Gem swapGem = gems.get(swapY).get(swapX);
+
+        gems.get(swapY).set(swapX, selectedGem);
+        gems.get(selectY).set(selectX, swapGem);
+
+        selectX = -1;
+        selectY = -1;
+        swapX = -1;
+        swapY = -1;
     }
 
     public void render(float delta, SpriteBatch batch) {
-        // TODO for tomorrow! figure out this nonsense!
-        int minX = 500;
-        int y = 150;
+        int x = minX;
+        int y = minY;
 
         if (selectX >= 0 && selectY >= 0) {
-            batch.draw(selectedGem, minX + (selectX * SLOT_WIDTH), y + (selectY * SLOT_WIDTH), 75, 75);
+            batch.draw(selectedGem, minX + (selectX * SLOT_WIDTH), minY + (selectY * SLOT_WIDTH), 75, 75);
+        }
+        if (swapX >= 0 && swapY >= 0) {
+            swapGem();
         }
 
         for (Iterator<Array<Gem>> iter = gems.iterator() ; iter.hasNext();) {
-            int x = minX;
             for (Iterator<Gem> iter2 = iter.next().iterator() ; iter2.hasNext();) {
                 switch (iter2.next().getColor()) {
                     case WHITE:
@@ -117,6 +143,7 @@ public class Board {
                 x += SLOT_WIDTH;
             }
             y += SLOT_WIDTH;
+            x = minX;
         }
 
     }

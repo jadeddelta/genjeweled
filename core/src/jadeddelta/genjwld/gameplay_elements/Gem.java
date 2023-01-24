@@ -15,6 +15,10 @@ public class Gem {
         this.enhancement = enhancement;
     }
 
+    /**
+     * Generates a random, regular gem for use in regular play.
+     * @return a gem with no enhancement and a valid color
+     */
     public static Gem randomGem() {
         GemColor color = GEM_COLORS.random();
         return new Gem(color, GemEnhancement.NONE);
@@ -26,5 +30,10 @@ public class Gem {
 
     public GemEnhancement getEnhancement() {
         return enhancement;
+    }
+
+    @Override
+    public Gem clone() {
+        return new Gem(this.getColor(), this.getEnhancement());
     }
 }
