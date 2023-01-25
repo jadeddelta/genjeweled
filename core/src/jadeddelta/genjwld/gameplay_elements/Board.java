@@ -3,7 +3,9 @@ package jadeddelta.genjwld.gameplay_elements;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectSet;
 
 import java.awt.*;
 import java.util.Iterator;
@@ -15,20 +17,19 @@ public class Board {
     private Texture redGem, blueGem, greenGem, purpleGem, whiteGem, yellowGem, orangeGem;
     private Texture selectedGem;
 
-    private int selectX, selectY;
-    private int swapX, swapY;
+    private GridPoint2 selectSlot, swapSlot;
 
     // TODO: eventually turn this into customizable board logic
+    // thoughts- make this into a "preferences" or whatnot, map?
     private final int BOARD_X_LENGTH = 8;
     private final int BOARD_Y_LENGTH = 8;
     private final int SLOT_WIDTH = 75;
 
-    private final int minX, minY;
-    private final int maxX, maxY;
+    private final GridPoint2 min, center, max;
 
     public final ScoreIndicator scoreIndicator;
 
-    public Board(Array<Array<Gem>> gems) {
+    public Board(Array<Array<Gem>> gems, GridPoint2 center) {
         this.gems = gems;
         this.redGem = new Texture(Gdx.files.internal("gems/redgem.png"));
         this.blueGem = new Texture(Gdx.files.internal("gems/bluegem.png"));
@@ -39,17 +40,16 @@ public class Board {
         this.orangeGem = new Texture(Gdx.files.internal("gems/orangegem.png"));
         this.selectedGem = new Texture(Gdx.files.internal("effects/selected.png"));
 
-        this.selectX = -1;
-        this.selectY = -1;
-        this.swapX = -1;
-        this.swapY = -1;
+        this.center = center;
+        int width = BOARD_X_LENGTH * SLOT_WIDTH;
+        int height = BOARD_Y_LENGTH * SLOT_WIDTH;
+        this.min = new GridPoint2(center.x - width/2, center.y - height/2);
+        this.max = new GridPoint2(center.x + width/2, center.y + width/2);
 
-        this.minX = 500;
-        this.minY = 150;
-        this.maxX = minX + (BOARD_X_LENGTH * SLOT_WIDTH);
-        this.maxY = minY + (BOARD_Y_LENGTH * SLOT_WIDTH);
+        selectSlot = new GridPoint2(-1, -1);
+        swapSlot = new GridPoint2(-1, -1);
 
-        this.scoreIndicator = new ScoreIndicator(minX, minY);
+        this.scoreIndicator = new ScoreIndicator(min.x, min.y);
     }
 
     /*
@@ -63,92 +63,127 @@ public class Board {
      * @return a default board with randomized gems
      */
     public static Board defaultBoard() {
-        Array<Array<Gem>> gems = new Array<>();
+        Array<Array<Gem>> gems = new Array<>(true, 8);
         for (int i = 0; i < 8; i++) {
-            Array<Gem> gemArray = new Array<>(8);
+            Array<Gem> gemArray = new Array<>(true, 8);
             for (int j = 0; j < 8; j++) {
                 gemArray.add(Gem.randomGem());
             }
             gems.add(gemArray);
         }
-        gems.get(3).set(5, new Gem(GemColor.SPECIAL, GemEnhancement.NONE));
-        return new Board(gems);
+        return new Board(gems, new GridPoint2(1600/2, 900/2));
     }
 
     public void selectGem(int x, int y) {
-        // select and swap have the same logic
+        if ((x > min.x && y > min.y)
+                && (x < max.x && y < max.y)) {
+            int selectedX = (x - min.x) / SLOT_WIDTH;
+            int selectedY = (y - min.y) / SLOT_WIDTH;
 
-        if ((x > minX && y > minY)
-                && (x < maxX && y < maxY)) {
-            int selectedX = (x - minX) / SLOT_WIDTH;
-            int selectedY = (y - minY) / SLOT_WIDTH;
-
-            if (selectX == selectedX && selectY == selectedY) {
-                swapX = -1;
-                swapY = -1;
+            if (selectSlot.x == selectedX && selectSlot.y == selectedY) {
+                swapSlot.x = -1;
+                swapSlot.y = -1;
                 return;
             }
 
-            if (selectX >= 0 && selectY >= 0) {
-                swapX = selectedX;
-                swapY = selectedY;
+            if (selectSlot.x >= 0 && selectSlot.y >= 0) {
+                swapSlot.x = selectedX;
+                swapSlot.y = selectedY;
                 return;
             }
 
-            selectX = selectedX;
-            selectY = selectedY;
+            selectSlot.x = selectedX;
+            selectSlot.y = selectedY;
             return;
         }
 
-        selectX = -1;
-        selectY = -1;
-        swapX = -1;
-        swapY = -1;
+        selectSlot.x = -1;
+        selectSlot.y = -1;
+        swapSlot.x = -1;
+        swapSlot.y = -1;
     }
 
     public void swapGem() {
-        Gem selectedGem = gems.get(selectY).get(selectX);
-        Gem swapGem = gems.get(swapY).get(swapX);
+        Gem selectedGem = gems.get(selectSlot.y).get(selectSlot.x);
+        Gem swapGem = gems.get(swapSlot.y).get(swapSlot.x);
 
-        gems.get(swapY).set(swapX, selectedGem);
-        gems.get(selectY).set(selectX, swapGem);
+        gems.get(swapSlot.y).set(swapSlot.x, selectedGem);
+        gems.get(selectSlot.y).set(selectSlot.x, swapGem);
 
-        selectX = -1;
-        selectY = -1;
-        swapX = -1;
-        swapY = -1;
-        scoreIndicator.updateScore(100);
+        System.out.println("Select   Swap");
+        System.out.println(selectSlot + "   " + swapSlot);
+        System.out.println(selectedGem.getColor() + "  " + swapGem.getColor());
+
+        selectSlot.x = -1;
+        selectSlot.y = -1;
+        swapSlot.x = -1;
+        swapSlot.y = -1;
     }
 
-    public boolean checkBoard() {
+    public ObjectSet<Match> checkBoard() {
         // must detect 3s, 4s + return gem creation slot, 5s + slot, 6s + slot, T + slot
         // COWABUNGAAAAAAAAAAAAA
-        // today i learned: point class exists LOL
-        Array<Point> matchedGems;
-        Array<Point> processingGems;
+        // today i learned: point class exists LOL :3
+        ObjectSet<Match> matches = new ObjectSet<>();
+
+        GemColor currentColor;
+        Match possibleMatch = new Match(MatchType.HORIZONTAL);
 
         for (int i = 0; i < 8; i++) {
+            currentColor = gems.get(i).get(0).getColor();
             for (int j = 0; j < 8; j++) {
-
+                GemColor check = gems.get(i).get(j).getColor();
+                if (check == currentColor) {
+                    if (possibleMatch.addSlot(new GridPoint2(j, i)))
+                        matches.add(possibleMatch);
+                }
+                else {
+                    possibleMatch = new Match(MatchType.HORIZONTAL);
+                    possibleMatch.addSlot(new GridPoint2(j, i));
+                    currentColor = check;
+                }
             }
+            possibleMatch = new Match(MatchType.HORIZONTAL);
         }
 
-        return false;
+        possibleMatch = new Match(MatchType.VERTICAL);
+        for (int i = 0; i < 8; i++) {
+            currentColor = gems.get(0).get(i).getColor();
+            for (int j = 0; j < 8; j++) {
+                GemColor check = gems.get(j).get(i).getColor();
+                if (check == currentColor) {
+                    if (possibleMatch.addSlot(new GridPoint2(i, j)))
+                        matches.add(possibleMatch);
+                }
+                else {
+                    possibleMatch = new Match(MatchType.VERTICAL);
+                    possibleMatch.addSlot(new GridPoint2(i, j));
+                    currentColor = check;
+                }
+            }
+            possibleMatch = new Match(MatchType.VERTICAL);
+        }
+
+        return matches;
     }
 
     public void render(float delta, SpriteBatch batch) {
-        int x = minX;
-        int y = minY;
+        int x = min.x;
+        int y = min.y;
 
-        if (selectX >= 0 && selectY >= 0) {
+        if (selectSlot.x >= 0 && selectSlot.y >= 0) {
             batch.disableBlending();
-            batch.draw(selectedGem, minX + (selectX * SLOT_WIDTH), minY + (selectY * SLOT_WIDTH), 75, 75);
+            batch.draw(selectedGem, min.x + (selectSlot.x * SLOT_WIDTH), min.y + (selectSlot.y * SLOT_WIDTH), 75, 75);
             batch.enableBlending();
         }
-        if (swapX >= 0 && swapY >= 0) {
+        if (swapSlot.x >= 0 && swapSlot.y >= 0) {
             swapGem();
-            if (checkBoard()) {
-
+            ObjectSet<Match> matches = checkBoard();
+            System.out.println(matches);
+            if (matches.size > 0) {
+                for (Match m : matches) {
+                    scoreIndicator.updateScore(m.getScore());
+                }
             }
         }
 
@@ -171,19 +206,19 @@ public class Board {
                         batch.draw(greenGem, x, y, 75, 75);
                         break;
                     case ORANGE:
-                        batch.draw(orangeGem, x, y);
+                        batch.draw(orangeGem, x, y, 75, 75);
                         break;
                     case RED:
-                        batch.draw(redGem, x, y);
+                        batch.draw(redGem, x, y, 75, 75);
                         break;
                     case SPECIAL:
-
+                        batch.draw(whiteGem, x + 20, y + 20, 35, 35);
                         break;
                 }
                 x += SLOT_WIDTH;
             }
             y += SLOT_WIDTH;
-            x = minX;
+            x = min.x;
         }
 
     }

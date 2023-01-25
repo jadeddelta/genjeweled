@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.GridPoint2;
 
 public class ScoreIndicator {
     // 150 width, 600 height spaced 200 away from board
@@ -14,10 +15,8 @@ public class ScoreIndicator {
     private int combo;
 
     private Texture scoreBar, scoreFill;
-    public BitmapFont scoreFont;
 
-    private int minX, minY;
-    private int maxX, maxY;
+    private GridPoint2 min, max;
     private boolean doneLevelAnimation = false;
 
     public ScoreIndicator(int boardX, int boardY) {
@@ -29,8 +28,8 @@ public class ScoreIndicator {
         this.scoreBar = new Texture(Gdx.files.internal("elements/score-indicator/scoreBar.png"));
         this.scoreFill = new Texture(Gdx.files.internal("elements/score-indicator/scoreFill.png"));
 
-        this.minX = boardX - 200 - 150;
-        this.minY = boardY;
+
+        this.min = new GridPoint2(boardX - 200 - 150, boardY);
     }
 
     public void render(float delta, SpriteBatch batch, BitmapFont text) {
@@ -41,11 +40,11 @@ public class ScoreIndicator {
         }
 
         int scoreHeight = (int) (600 * ((double) score / scoreCap));
-        batch.draw(scoreBar, minX, minY, 150, 600);
-        batch.draw(scoreFill, minX, minY, 0, 0, 150, scoreHeight);
-        text.draw(batch,"Score: " + aggregateScore, minX, minY + 600 + 100 + 5);
-        text.draw(batch, "Combo: " + combo, minX, minY + 600 + 75);
-        text.draw(batch, "Level: " + level, minX, minY + 600 + 50 - 5);
+        batch.draw(scoreFill, min.x, min.y, 0, 0, 150, scoreHeight);
+        batch.draw(scoreBar, min.x, min.y, 150, 600);
+        text.draw(batch,"Score: " + aggregateScore, min.x, min.x + 600 + 100 + 5);
+        text.draw(batch, "Combo: " + combo, min.x, min.y + 600 + 75);
+        text.draw(batch, "Level: " + level, min.x, min.y + 600 + 50 - 5);
     }
 
     public void checkLevelUp() {

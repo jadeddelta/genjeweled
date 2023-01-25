@@ -33,7 +33,22 @@ public class Gem {
     }
 
     @Override
+    public boolean equals (Object o) {
+        if (!(o instanceof Gem))
+            return false;
+        if (((Gem) o).getColor() == this.getColor()
+            && ((Gem) o).getEnhancement() == this.getEnhancement())
+            return true;
+        return false;
+    }
+
+    @Override
     public Gem clone() {
         return new Gem(this.getColor(), this.getEnhancement());
+    }
+
+    @Override
+    public String toString() {
+        return color + " Gem";
     }
 }
