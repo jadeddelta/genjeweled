@@ -40,6 +40,7 @@ public class Zen implements Screen {
 
         game.batch.begin();
         board.render(delta, game.batch);
+        board.scoreIndicator.render(delta, game.batch, game.font);
         game.batch.end();
     }
 

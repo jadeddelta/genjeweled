@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 
+import java.awt.*;
 import java.util.Iterator;
 
 public class Board {
@@ -24,6 +25,8 @@ public class Board {
 
     private final int minX, minY;
     private final int maxX, maxY;
+
+    public final ScoreIndicator scoreIndicator;
 
     public Board(Array<Array<Gem>> gems) {
         this.gems = gems;
@@ -45,7 +48,15 @@ public class Board {
         this.minY = 150;
         this.maxX = minX + (BOARD_X_LENGTH * SLOT_WIDTH);
         this.maxY = minY + (BOARD_Y_LENGTH * SLOT_WIDTH);
+
+        this.scoreIndicator = new ScoreIndicator(minX, minY);
     }
+
+    /*
+            <- x
+                 y
+                 v
+     */
 
     /**
      * Generates the default 8x8 board used for most games.
@@ -60,6 +71,7 @@ public class Board {
             }
             gems.add(gemArray);
         }
+        gems.get(3).set(5, new Gem(GemColor.SPECIAL, GemEnhancement.NONE));
         return new Board(gems);
     }
 
@@ -70,6 +82,12 @@ public class Board {
                 && (x < maxX && y < maxY)) {
             int selectedX = (x - minX) / SLOT_WIDTH;
             int selectedY = (y - minY) / SLOT_WIDTH;
+
+            if (selectX == selectedX && selectY == selectedY) {
+                swapX = -1;
+                swapY = -1;
+                return;
+            }
 
             if (selectX >= 0 && selectY >= 0) {
                 swapX = selectedX;
@@ -99,6 +117,23 @@ public class Board {
         selectY = -1;
         swapX = -1;
         swapY = -1;
+        scoreIndicator.updateScore(100);
+    }
+
+    public boolean checkBoard() {
+        // must detect 3s, 4s + return gem creation slot, 5s + slot, 6s + slot, T + slot
+        // COWABUNGAAAAAAAAAAAAA
+        // today i learned: point class exists LOL
+        Array<Point> matchedGems;
+        Array<Point> processingGems;
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+
+            }
+        }
+
+        return false;
     }
 
     public void render(float delta, SpriteBatch batch) {
@@ -106,10 +141,15 @@ public class Board {
         int y = minY;
 
         if (selectX >= 0 && selectY >= 0) {
+            batch.disableBlending();
             batch.draw(selectedGem, minX + (selectX * SLOT_WIDTH), minY + (selectY * SLOT_WIDTH), 75, 75);
+            batch.enableBlending();
         }
         if (swapX >= 0 && swapY >= 0) {
             swapGem();
+            if (checkBoard()) {
+
+            }
         }
 
         for (Iterator<Array<Gem>> iter = gems.iterator() ; iter.hasNext();) {
