@@ -52,12 +52,6 @@ public class Board {
         this.scoreIndicator = new ScoreIndicator(min.x, min.y);
     }
 
-    /*
-            <- x
-                 y
-                 v
-     */
-
     /**
      * Generates the default 8x8 board used for most games.
      * @return a default board with randomized gems
@@ -179,7 +173,8 @@ public class Board {
         if (swapSlot.x >= 0 && swapSlot.y >= 0) {
             swapGem();
             ObjectSet<Match> matches = checkBoard();
-            System.out.println(matches);
+            matches = Match.processTShapes(matches);
+
             if (matches.size > 0) {
                 for (Match m : matches) {
                     scoreIndicator.updateScore(m.getScore());
