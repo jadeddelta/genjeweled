@@ -27,6 +27,7 @@ public class Assets {
         manager.load("gems/whitegem.png", Texture.class);
         manager.load("gems/yellowgem.png", Texture.class);
         manager.load("gems/orangegem.png", Texture.class);
+        manager.load("gems/none.png", Texture.class);
         manager.load("effects/selected.png", Texture.class);
 
         manager.load("elements/score-indicator/scoreBar.png", Texture.class);
@@ -91,6 +92,9 @@ public class Assets {
                 break;
             case ORANGE:
                 path.append("orangegem");
+                break;
+            case NONE:
+                path.append("none");
                 break;
         }
         path.append(".png");

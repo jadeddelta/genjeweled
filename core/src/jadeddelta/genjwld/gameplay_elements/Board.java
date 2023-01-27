@@ -1,14 +1,13 @@
 package jadeddelta.genjwld.gameplay_elements;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectSet;
+import com.badlogic.gdx.utils.TimeUtils;
 import jadeddelta.genjwld.data.Assets;
 
-import java.awt.*;
 import java.util.Iterator;
 
 public class Board {
@@ -21,19 +20,22 @@ public class Board {
     // thoughts- make this into a "preferences" or whatnot, map?
     private final int BOARD_X_LENGTH = 8;
     private final int BOARD_Y_LENGTH = 8;
-    private final int SLOT_WIDTH = 75;
+    private final int SLOT_DIM = 75;
 
     private final GridPoint2 min, center, max;
 
     public final ScoreIndicator scoreIndicator;
     private Assets manager;
 
+
+    private long lastMatchTime;
+
     public Board(Array<Array<Gem>> gems, GridPoint2 center, Assets manager) {
         this.gems = gems;
 
         this.center = center;
-        int width = BOARD_X_LENGTH * SLOT_WIDTH;
-        int height = BOARD_Y_LENGTH * SLOT_WIDTH;
+        int width = BOARD_X_LENGTH * SLOT_DIM;
+        int height = BOARD_Y_LENGTH * SLOT_DIM;
         this.min = new GridPoint2(center.x - width/2, center.y - height/2);
         this.max = new GridPoint2(center.x + width/2, center.y + width/2);
 
@@ -43,6 +45,8 @@ public class Board {
         this.manager = manager;
 
         this.scoreIndicator = new ScoreIndicator(min.x, min.y, manager);
+
+        this.lastMatchTime = 0;
     }
 
     /**
@@ -50,22 +54,27 @@ public class Board {
      * @return a default board with randomized gems
      */
     public static Board defaultBoard(Assets manager) {
-        Array<Array<Gem>> gems = new Array<>(true, 8);
-        for (int i = 0; i < 8; i++) {
-            Array<Gem> gemArray = new Array<>(true, 8);
-            for (int j = 0; j < 8; j++) {
-                gemArray.add(Gem.randomGem());
+        while (true) {
+            Array<Array<Gem>> gems = new Array<>(true, 8);
+            Board b;
+            for (int i = 0; i < 8; i++) {
+                Array<Gem> gemArray = new Array<>(true, 8);
+                for (int j = 0; j < 8; j++) {
+                    gemArray.add(Gem.randomGem());
+                }
+                gems.add(gemArray);
             }
-            gems.add(gemArray);
+            b = new Board(gems, new GridPoint2(1600/2, 900/2), manager);
+            if (b.checkBoard().size == 0)
+                return b;
         }
-        return new Board(gems, new GridPoint2(1600/2, 900/2), manager);
     }
 
     public void selectGem(int x, int y) {
         if ((x > min.x && y > min.y)
                 && (x < max.x && y < max.y)) {
-            int selectedX = (x - min.x) / SLOT_WIDTH;
-            int selectedY = (y - min.y) / SLOT_WIDTH;
+            int selectedX = (x - min.x) / SLOT_DIM;
+            int selectedY = (y - min.y) / SLOT_DIM;
 
             if (selectSlot.x == selectedX && selectSlot.y == selectedY) {
                 swapSlot.x = -1;
@@ -150,18 +159,52 @@ public class Board {
         return matches;
     }
 
-    public void render(float delta, SpriteBatch batch) {
-        int x = min.x;
-        int y = min.y;
+    public void removeMatchedGems(ObjectSet<Match> matches) {
+        for (Match m : matches) {
+            for (GridPoint2 p : m.getGemSlots()) {
+                gems.get(p.y).set(p.x, new Gem(GemColor.NONE, GemEnhancement.NONE));
+            }
+        }
+        update();
+    }
 
+    public void update() {
+        int replaced = 1;
+        int generated = 1;
+
+        while (replaced > 0 && generated > 0) {
+            replaced = 0;
+            generated = 0;
+            for (int i = 0; i < 7; i++) {
+                for (int j = 0; j < 8; j++) {
+                    Gem bottom = gems.get(i).get(j).clone();
+                    if (bottom.getColor() == GemColor.NONE) {
+                        Gem top = gems.get(i+1).get(j).clone();
+
+                        gems.get(i).set(j, top);
+                        gems.get(i+1).set(j, bottom);
+                        replaced++;
+                    }
+                }
+            }
+            for (int k = 0; k < 8; k++) {
+                if (gems.get(7).get(k).getColor() == GemColor.NONE) {
+                    gems.get(7).set(k, Gem.randomGem());
+                    generated++;
+                }
+            }
+        }
+    }
+
+    public void render(float delta, SpriteBatch batch) {
         if (selectSlot.x >= 0 && selectSlot.y >= 0) {
             batch.disableBlending();
             batch.draw(
                     manager.getGemSelected(),
-                    min.x + (selectSlot.x * SLOT_WIDTH),
-                    min.y + (selectSlot.y * SLOT_WIDTH),
-                    SLOT_WIDTH,
-                    SLOT_WIDTH);
+                    min.x + (selectSlot.x * SLOT_DIM),
+                    min.y + (selectSlot.y * SLOT_DIM),
+                    SLOT_DIM,
+                    SLOT_DIM);
             batch.enableBlending();
         }
         if (swapSlot.x >= 0 && swapSlot.y >= 0) {
@@ -169,20 +212,39 @@ public class Board {
             ObjectSet<Match> matches = checkBoard();
             matches = Match.processTShapes(matches);
 
+            boolean broke = true;
+            if (matches.size > 0) {
+                broke = false;
+                for (Match m : matches) {
+                    scoreIndicator.updateScore(m.getScore());
+                }
+                removeMatchedGems(matches);
+            }
+            scoreIndicator.updateCombo(broke);
+            lastMatchTime = TimeUtils.nanoTime();
+            System.out.println(lastMatchTime);
+        }
+        if (lastMatchTime != 0 && (lastMatchTime + 1000000000) <= TimeUtils.nanoTime()) {
+            lastMatchTime = 0;
+            ObjectSet<Match> matches = checkBoard();
+            matches = Match.processTShapes(matches);
             if (matches.size > 0) {
                 for (Match m : matches) {
                     scoreIndicator.updateScore(m.getScore());
                 }
+                removeMatchedGems(matches);
             }
         }
 
+        int x = min.x;
+        int y = min.y;
         for (Iterator<Array<Gem>> iter = gems.iterator() ; iter.hasNext();) {
-            for (Iterator<Gem> iter2 = iter.next().iterator() ; iter2.hasNext();) {
-                Texture t = manager.getGemTexture(iter2.next().getColor());
-                batch.draw(t, x, y, SLOT_WIDTH, SLOT_WIDTH);
-                x += SLOT_WIDTH;
+            for (Gem gem : iter.next()) {
+                Texture t = manager.getGemTexture(gem.getColor());
+                batch.draw(t, x, y, SLOT_DIM, SLOT_DIM);
+                x += SLOT_DIM;
             }
-            y += SLOT_WIDTH;
+            y += SLOT_DIM;
             x = min.x;
         }
 

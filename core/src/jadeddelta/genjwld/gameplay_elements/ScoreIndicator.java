@@ -1,8 +1,5 @@
 package jadeddelta.genjwld.gameplay_elements;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.GridPoint2;
 import jadeddelta.genjwld.data.Assets;
@@ -14,16 +11,17 @@ public class ScoreIndicator {
     private int aggregateScore;
     private int level;
     private int combo;
+    private int comboProgress;
 
     private Assets manager;
 
     private GridPoint2 min, max;
-    private boolean doneLevelAnimation = false;
 
     public ScoreIndicator(int boardX, int boardY, Assets manager) {
         this.score = 0;
         this.level = 0;
         this.combo = 1;
+        this.comboProgress = 0;
         this.scoreCap = 2500;
 
         this.manager = manager;
@@ -34,9 +32,6 @@ public class ScoreIndicator {
     public void render(float delta, SpriteBatch batch) {
         // load portion of texture from sprite max x -> sprite min x + (maxX-minX) * (currentScore / scoreCap)
         // render is called irrespective of board state
-        if (!doneLevelAnimation) {
-            // TODO: cool animation stuff!
-        }
 
         int scoreHeight = (int) (600 * ((double) score / scoreCap));
         batch.draw(manager.getScoreFill(), min.x, min.y, 0, 0, 150, scoreHeight);
@@ -51,7 +46,6 @@ public class ScoreIndicator {
             score -= scoreCap;
             scoreCap *= 2.5;
             level++;
-            doneLevelAnimation = true;
         }
     }
 
@@ -62,10 +56,45 @@ public class ScoreIndicator {
     }
 
     public void updateCombo(boolean broke) {
-        if (broke)
-            combo = 1;
-        if (combo >= 10)
+        if (broke && combo == 1)
             return;
-        combo++;
+        if (combo == 10)
+            return;
+        if (broke) {
+            comboProgress = 0;
+            combo--;
+        }
+        else {
+            comboProgress++;
+            int threshold = 4;
+            switch (combo) {
+                case 1:
+                    threshold = 4;
+                    break;
+                case 2:
+                case 3:
+                    threshold = 6;
+                    break;
+                case 4:
+                case 5:
+                    threshold = 8;
+                    break;
+                case 6:
+                case 7:
+                    threshold = 12;
+                    break;
+                case 8:
+                case 9:
+                    threshold = 16;
+                    break;
+                case 10:
+                    threshold = 32;
+                    break;
+            }
+            if (comboProgress == threshold)
+                combo++;
+        }
+
+
     }
 }

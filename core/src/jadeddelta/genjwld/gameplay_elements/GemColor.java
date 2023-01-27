@@ -13,5 +13,6 @@ public enum GemColor {
     BLUE,
     PURPLE,
     WHITE,
-    SPECIAL
+    SPECIAL,
+    NONE
 }
