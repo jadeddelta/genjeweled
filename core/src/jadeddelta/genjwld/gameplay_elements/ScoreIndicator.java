@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.GridPoint2;
+import jadeddelta.genjwld.data.Assets;
 
 public class ScoreIndicator {
     // 150 width, 600 height spaced 200 away from board
@@ -14,25 +15,23 @@ public class ScoreIndicator {
     private int level;
     private int combo;
 
-    private Texture scoreBar, scoreFill;
+    private Assets manager;
 
     private GridPoint2 min, max;
     private boolean doneLevelAnimation = false;
 
-    public ScoreIndicator(int boardX, int boardY) {
+    public ScoreIndicator(int boardX, int boardY, Assets manager) {
         this.score = 0;
         this.level = 0;
         this.combo = 1;
         this.scoreCap = 2500;
 
-        this.scoreBar = new Texture(Gdx.files.internal("elements/score-indicator/scoreBar.png"));
-        this.scoreFill = new Texture(Gdx.files.internal("elements/score-indicator/scoreFill.png"));
-
+        this.manager = manager;
 
         this.min = new GridPoint2(boardX - 200 - 150, boardY);
     }
 
-    public void render(float delta, SpriteBatch batch, BitmapFont text) {
+    public void render(float delta, SpriteBatch batch) {
         // load portion of texture from sprite max x -> sprite min x + (maxX-minX) * (currentScore / scoreCap)
         // render is called irrespective of board state
         if (!doneLevelAnimation) {
@@ -40,11 +39,11 @@ public class ScoreIndicator {
         }
 
         int scoreHeight = (int) (600 * ((double) score / scoreCap));
-        batch.draw(scoreFill, min.x, min.y, 0, 0, 150, scoreHeight);
-        batch.draw(scoreBar, min.x, min.y, 150, 600);
-        text.draw(batch,"Score: " + aggregateScore, min.x, min.x + 600 + 100 + 5);
-        text.draw(batch, "Combo: " + combo, min.x, min.y + 600 + 75);
-        text.draw(batch, "Level: " + level, min.x, min.y + 600 + 50 - 5);
+        batch.draw(manager.getScoreFill(), min.x, min.y, 0, 0, 150, scoreHeight);
+        batch.draw(manager.getScoreBar(), min.x, min.y, 150, 600);
+        manager.getScoreText().draw(batch, "Score: " + aggregateScore, min.x, min.x + 600 + 100 + 5);
+        manager.getScoreText().draw(batch, "Combo: " + combo, min.x, min.y + 600 + 75);
+        manager.getScoreText().draw(batch, "Level: " + level, min.x, min.y + 600 + 50 - 5);
     }
 
     public void checkLevelUp() {

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectSet;
+import jadeddelta.genjwld.data.Assets;
 
 import java.awt.*;
 import java.util.Iterator;
@@ -13,9 +14,6 @@ import java.util.Iterator;
 public class Board {
 
     private Array<Array<Gem>> gems;
-
-    private Texture redGem, blueGem, greenGem, purpleGem, whiteGem, yellowGem, orangeGem;
-    private Texture selectedGem;
 
     private GridPoint2 selectSlot, swapSlot;
 
@@ -28,17 +26,10 @@ public class Board {
     private final GridPoint2 min, center, max;
 
     public final ScoreIndicator scoreIndicator;
+    private Assets manager;
 
-    public Board(Array<Array<Gem>> gems, GridPoint2 center) {
+    public Board(Array<Array<Gem>> gems, GridPoint2 center, Assets manager) {
         this.gems = gems;
-        this.redGem = new Texture(Gdx.files.internal("gems/redgem.png"));
-        this.blueGem = new Texture(Gdx.files.internal("gems/bluegem.png"));
-        this.greenGem = new Texture(Gdx.files.internal("gems/greengem.png"));
-        this.purpleGem = new Texture(Gdx.files.internal("gems/purplegem.png"));
-        this.whiteGem = new Texture(Gdx.files.internal("gems/whitegem.png"));
-        this.yellowGem = new Texture(Gdx.files.internal("gems/yellowgem.png"));
-        this.orangeGem = new Texture(Gdx.files.internal("gems/orangegem.png"));
-        this.selectedGem = new Texture(Gdx.files.internal("effects/selected.png"));
 
         this.center = center;
         int width = BOARD_X_LENGTH * SLOT_WIDTH;
@@ -49,14 +40,16 @@ public class Board {
         selectSlot = new GridPoint2(-1, -1);
         swapSlot = new GridPoint2(-1, -1);
 
-        this.scoreIndicator = new ScoreIndicator(min.x, min.y);
+        this.manager = manager;
+
+        this.scoreIndicator = new ScoreIndicator(min.x, min.y, manager);
     }
 
     /**
      * Generates the default 8x8 board used for most games.
      * @return a default board with randomized gems
      */
-    public static Board defaultBoard() {
+    public static Board defaultBoard(Assets manager) {
         Array<Array<Gem>> gems = new Array<>(true, 8);
         for (int i = 0; i < 8; i++) {
             Array<Gem> gemArray = new Array<>(true, 8);
@@ -65,7 +58,7 @@ public class Board {
             }
             gems.add(gemArray);
         }
-        return new Board(gems, new GridPoint2(1600/2, 900/2));
+        return new Board(gems, new GridPoint2(1600/2, 900/2), manager);
     }
 
     public void selectGem(int x, int y) {
@@ -103,10 +96,6 @@ public class Board {
 
         gems.get(swapSlot.y).set(swapSlot.x, selectedGem);
         gems.get(selectSlot.y).set(selectSlot.x, swapGem);
-
-        System.out.println("Select   Swap");
-        System.out.println(selectSlot + "   " + swapSlot);
-        System.out.println(selectedGem.getColor() + "  " + swapGem.getColor());
 
         selectSlot.x = -1;
         selectSlot.y = -1;
@@ -167,7 +156,12 @@ public class Board {
 
         if (selectSlot.x >= 0 && selectSlot.y >= 0) {
             batch.disableBlending();
-            batch.draw(selectedGem, min.x + (selectSlot.x * SLOT_WIDTH), min.y + (selectSlot.y * SLOT_WIDTH), 75, 75);
+            batch.draw(
+                    manager.getGemSelected(),
+                    min.x + (selectSlot.x * SLOT_WIDTH),
+                    min.y + (selectSlot.y * SLOT_WIDTH),
+                    SLOT_WIDTH,
+                    SLOT_WIDTH);
             batch.enableBlending();
         }
         if (swapSlot.x >= 0 && swapSlot.y >= 0) {
@@ -184,32 +178,8 @@ public class Board {
 
         for (Iterator<Array<Gem>> iter = gems.iterator() ; iter.hasNext();) {
             for (Iterator<Gem> iter2 = iter.next().iterator() ; iter2.hasNext();) {
-                switch (iter2.next().getColor()) {
-                    case WHITE:
-                        batch.draw(whiteGem, x, y, 75, 75);
-                        break;
-                    case PURPLE:
-                        batch.draw(purpleGem, x, y, 75, 75);
-                        break;
-                    case YELLOW:
-                        batch.draw(yellowGem, x, y, 75, 75);
-                        break;
-                    case BLUE:
-                        batch.draw(blueGem, x, y, 75, 75);
-                        break;
-                    case GREEN:
-                        batch.draw(greenGem, x, y, 75, 75);
-                        break;
-                    case ORANGE:
-                        batch.draw(orangeGem, x, y, 75, 75);
-                        break;
-                    case RED:
-                        batch.draw(redGem, x, y, 75, 75);
-                        break;
-                    case SPECIAL:
-                        batch.draw(whiteGem, x + 20, y + 20, 35, 35);
-                        break;
-                }
+                Texture t = manager.getGemTexture(iter2.next().getColor());
+                batch.draw(t, x, y, SLOT_WIDTH, SLOT_WIDTH);
                 x += SLOT_WIDTH;
             }
             y += SLOT_WIDTH;

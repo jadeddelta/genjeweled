@@ -79,6 +79,7 @@ public class Match {
                 finalMatches.add(createTMatch(m, n));
                 horizMatches.remove(m);
                 vertMatches.remove(n);
+                break;
             }
         }
 

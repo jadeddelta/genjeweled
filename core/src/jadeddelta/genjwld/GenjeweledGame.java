@@ -6,26 +6,22 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import jadeddelta.genjwld.data.Assets;
 import jadeddelta.genjwld.screens.MainScreen;
+import jadeddelta.genjwld.screens.SplashScreen;
 
 public class GenjeweledGame extends Game {
 	public SpriteBatch batch;
-	public BitmapFont font;
+	public Assets manager;
 	
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
+		manager = new Assets();
 
-		FreeTypeFontGenerator gen = new FreeTypeFontGenerator(Gdx.files.internal("fonts/oxygen.ttf"));
-		FreeTypeFontGenerator.FreeTypeFontParameter para = new FreeTypeFontGenerator.FreeTypeFontParameter();
-		para.size = 30;
-		para.color = Color.YELLOW;
-		para.borderColor = Color.BLACK;
-		para.borderWidth = 3;
-		font = gen.generateFont(para);
-		gen.dispose();
+		manager.load();
 
-		this.setScreen(new MainScreen(this));
+		this.setScreen(new SplashScreen(this));
 	}
 
 	@Override
@@ -36,6 +32,5 @@ public class GenjeweledGame extends Game {
 	@Override
 	public void dispose () {
 		batch.dispose();
-		font.dispose();
 	}
 }

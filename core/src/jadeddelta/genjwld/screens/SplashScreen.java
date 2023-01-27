@@ -4,19 +4,17 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.ScreenUtils;
 import jadeddelta.genjwld.GenjeweledGame;
 
-public class MainScreen implements Screen {
-    final GenjeweledGame game;
-    BitmapFont titleFont;
-    BitmapFont subtitleFont;
+public class SplashScreen implements Screen {
 
-    public MainScreen(GenjeweledGame game) {
+    final GenjeweledGame game;
+    private Texture splashBg;
+
+    public SplashScreen(GenjeweledGame game) {
         this.game = game;
-        titleFont = game.manager.getMainFonts(true);
-        subtitleFont = game.manager.getMainFonts(false);
+        this.splashBg = new Texture(Gdx.files.internal("bgs/splash.png"));
     }
 
 
@@ -29,15 +27,16 @@ public class MainScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(Color.BLACK);
 
-        game.batch.begin();
-        titleFont.draw(game.batch, "genjeweled", 600, 650);
-        subtitleFont.draw(game.batch, "tap anywhere or press a key to begin", 500, 450);
-        subtitleFont.draw(game.batch, "made w/ love", 1300, 100);
-        game.batch.end();
-
-        if (Gdx.input.isTouched()) {
-            game.setScreen(new Zen(game));
+        if (game.manager.update()) {
+            game.setScreen(new MainScreen(game));
             dispose();
+        }
+        else {
+            game.batch.begin();
+            game.batch.disableBlending();
+            game.batch.draw(splashBg, 0, 0, 1600, 900);
+            game.batch.enableBlending();
+            game.batch.end();
         }
     }
 
@@ -63,6 +62,6 @@ public class MainScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        splashBg.dispose();
     }
 }

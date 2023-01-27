@@ -22,7 +22,7 @@ public class Zen implements Screen {
         this.game = game;
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1600, 900);
-        this.board = Board.defaultBoard();
+        this.board = Board.defaultBoard(game.manager);
 
         Gdx.input.setInputProcessor(new GemInputProcessor(board));
     }
@@ -40,7 +40,7 @@ public class Zen implements Screen {
 
         game.batch.begin();
         board.render(delta, game.batch);
-        board.scoreIndicator.render(delta, game.batch, game.font);
+        board.scoreIndicator.render(delta, game.batch);
         game.batch.end();
     }
 
