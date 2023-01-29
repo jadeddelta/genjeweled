@@ -69,7 +69,6 @@ public class ScoreIndicator {
             int threshold = 4;
             switch (combo) {
                 case 1:
-                    threshold = 4;
                     break;
                 case 2:
                 case 3:

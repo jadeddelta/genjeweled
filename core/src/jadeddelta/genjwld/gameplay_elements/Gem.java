@@ -4,8 +4,8 @@ import com.badlogic.gdx.utils.Array;
 
 public class Gem {
 
-    private GemColor color;
-    private GemEnhancement enhancement;
+    private final GemColor color;
+    private final GemEnhancement enhancement;
     private final static Array<GemColor> GEM_COLORS =
             new Array<>(new GemColor[] {GemColor.RED, GemColor.ORANGE, GemColor.YELLOW,
             GemColor.GREEN, GemColor.BLUE, GemColor.PURPLE, GemColor.WHITE});
@@ -33,13 +33,11 @@ public class Gem {
     }
 
     @Override
-    public boolean equals (Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof Gem))
             return false;
-        if (((Gem) o).getColor() == this.getColor()
-            && ((Gem) o).getEnhancement() == this.getEnhancement())
-            return true;
-        return false;
+        return ((Gem) o).getColor() == this.getColor()
+                && ((Gem) o).getEnhancement() == this.getEnhancement();
     }
 
     @Override

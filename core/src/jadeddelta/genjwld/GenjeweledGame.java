@@ -1,13 +1,8 @@
 package jadeddelta.genjwld;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import jadeddelta.genjwld.data.Assets;
-import jadeddelta.genjwld.screens.MainScreen;
 import jadeddelta.genjwld.screens.SplashScreen;
 
 public class GenjeweledGame extends Game {

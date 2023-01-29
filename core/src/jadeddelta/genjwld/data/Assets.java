@@ -10,10 +10,11 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import jadeddelta.genjwld.gameplay_elements.GemColor;
+import jadeddelta.genjwld.gameplay_elements.GemEnhancement;
 
 public class Assets {
 
-    private AssetManager manager;
+    private final AssetManager manager;
 
     public Assets() {
         manager = new AssetManager();
@@ -29,6 +30,8 @@ public class Assets {
         manager.load("gems/orangegem.png", Texture.class);
         manager.load("gems/none.png", Texture.class);
         manager.load("effects/selected.png", Texture.class);
+        manager.load("effects/flame.png", Texture.class);
+        manager.load("effects/lightning.png", Texture.class);
 
         manager.load("elements/score-indicator/scoreBar.png", Texture.class);
         manager.load("elements/score-indicator/scoreFill.png", Texture.class);
@@ -98,6 +101,21 @@ public class Assets {
                 break;
         }
         path.append(".png");
+        return manager.get(path.toString());
+    }
+
+    public Texture getGemEffects(GemEnhancement enhancement) {
+        StringBuilder path = new StringBuilder("effects/");
+        switch (enhancement) {
+            case FLAME:
+                path.append("flame.png");
+                break;
+            case LIGHTNING:
+                path.append("lightning.png");
+                break;
+            case NONE:
+                return null;
+        }
         return manager.get(path.toString());
     }
 

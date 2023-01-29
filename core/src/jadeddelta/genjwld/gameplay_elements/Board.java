@@ -126,6 +126,7 @@ public class Board {
             for (int j = 0; j < 8; j++) {
                 GemColor check = gems.get(i).get(j).getColor();
                 if (check == currentColor) {
+                    possibleMatch.setGemColor(currentColor);
                     if (possibleMatch.addSlot(new GridPoint2(j, i)))
                         matches.add(possibleMatch);
                 }
@@ -144,6 +145,7 @@ public class Board {
             for (int j = 0; j < 8; j++) {
                 GemColor check = gems.get(j).get(i).getColor();
                 if (check == currentColor) {
+                    possibleMatch.setGemColor(currentColor);
                     if (possibleMatch.addSlot(new GridPoint2(i, j)))
                         matches.add(possibleMatch);
                 }
@@ -160,14 +162,20 @@ public class Board {
     }
 
     public void removeMatchedGems(ObjectSet<Match> matches) {
+        System.out.println(matches);
         for (Match m : matches) {
             for (GridPoint2 p : m.getGemSlots()) {
                 gems.get(p.y).set(p.x, new Gem(GemColor.NONE, GemEnhancement.NONE));
+            }
+            if (m.getGemEnhancement() != GemEnhancement.NONE) {
+                GridPoint2 slot = m.specialPosition();
+                gems.get(slot.y).set(slot.x, new Gem(m.getGemColor(), m.getGemEnhancement()));
             }
         }
         update();
     }
 
+    //TODO: refactor this to allow for different sized boards!
     public void update() {
         int replaced = 1;
         int generated = 1;
@@ -240,8 +248,11 @@ public class Board {
         int y = min.y;
         for (Iterator<Array<Gem>> iter = gems.iterator() ; iter.hasNext();) {
             for (Gem gem : iter.next()) {
-                Texture t = manager.getGemTexture(gem.getColor());
-                batch.draw(t, x, y, SLOT_DIM, SLOT_DIM);
+                Texture gemTexture = manager.getGemTexture(gem.getColor());
+                batch.draw(gemTexture, x, y, SLOT_DIM, SLOT_DIM);
+                Texture gemEffect = manager.getGemEffects(gem.getEnhancement());
+                if (gemEffect != null)
+                    batch.draw(gemEffect, x, y, SLOT_DIM, SLOT_DIM);
                 x += SLOT_DIM;
             }
             y += SLOT_DIM;
