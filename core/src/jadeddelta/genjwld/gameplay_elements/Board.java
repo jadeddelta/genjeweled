@@ -27,6 +27,9 @@ public class Board {
     public final ScoreIndicator scoreIndicator;
     private Assets manager;
 
+    private Array<GridPoint2> smokedGems = new Array<>();
+    private long smokeTime = 0;
+
 
     private long lastMatchTime;
 
@@ -51,7 +54,7 @@ public class Board {
 
     /**
      * Generates the default 8x8 board used for most games.
-     * @return a default board with randomized gems
+     * @return a default board with randomized gems with no possible matches
      */
     public static Board defaultBoard(Assets manager) {
         while (true) {
@@ -70,6 +73,12 @@ public class Board {
         }
     }
 
+    /**
+     * Selects the gem on the board given coordinates from <code>GemInputProcessor</code>,
+     * differentiating between the gem to be selected and the gem to be swapped with.
+     * @param x the x coordinate of the mouse click
+     * @param y the y coordinate of the mouse click
+     */
     public void selectGem(int x, int y) {
         if ((x > min.x && y > min.y)
                 && (x < max.x && y < max.y)) {
@@ -99,6 +108,9 @@ public class Board {
         swapSlot.y = -1;
     }
 
+    /**
+     * Swaps the selected gem with the gem to be swapped, then resets both selectors.
+     */
     public void swapGem() {
         Gem selectedGem = gems.get(selectSlot.y).get(selectSlot.x);
         Gem swapGem = gems.get(swapSlot.y).get(swapSlot.x);
@@ -112,10 +124,11 @@ public class Board {
         swapSlot.y = -1;
     }
 
+    /**
+     * Checks the board if any matches exist.
+     * @return an <code>ObjectSet</code> with all matches, including condensed TShape matches.
+     */
     public ObjectSet<Match> checkBoard() {
-        // must detect 3s, 4s + return gem creation slot, 5s + slot, 6s + slot, T + slot
-        // COWABUNGAAAAAAAAAAAAA
-        // today i learned: point class exists LOL :3
         ObjectSet<Match> matches = new ObjectSet<>();
 
         GemColor currentColor;
@@ -158,11 +171,15 @@ public class Board {
             possibleMatch = new Match(MatchType.VERTICAL);
         }
 
+        matches = Match.processTShapes(matches);
         return matches;
     }
 
+    /**
+     * Removes matched gems and replaces them with blank gems.
+     * @param matches a set of matches describing the positions of gems that will be removed
+     */
     public void removeMatchedGems(ObjectSet<Match> matches) {
-        System.out.println(matches);
         for (Match m : matches) {
             for (GridPoint2 p : m.getGemSlots()) {
                 gems.get(p.y).set(p.x, new Gem(GemColor.NONE, GemEnhancement.NONE));
@@ -175,7 +192,10 @@ public class Board {
         update();
     }
 
-    //TODO: refactor this to allow for different sized boards!
+    /**
+     * Updates the board by letting gems fall down to the bottom whilst creating
+     * new ones.
+     */
     public void update() {
         int replaced = 1;
         int generated = 1;
@@ -183,8 +203,8 @@ public class Board {
         while (replaced > 0 && generated > 0) {
             replaced = 0;
             generated = 0;
-            for (int i = 0; i < 7; i++) {
-                for (int j = 0; j < 8; j++) {
+            for (int i = 0; i < BOARD_Y_LENGTH - 1; i++) {
+                for (int j = 0; j < BOARD_X_LENGTH; j++) {
                     Gem bottom = gems.get(i).get(j).clone();
                     if (bottom.getColor() == GemColor.NONE) {
                         Gem top = gems.get(i+1).get(j).clone();
@@ -195,9 +215,9 @@ public class Board {
                     }
                 }
             }
-            for (int k = 0; k < 8; k++) {
-                if (gems.get(7).get(k).getColor() == GemColor.NONE) {
-                    gems.get(7).set(k, Gem.randomGem());
+            for (int k = 0; k < BOARD_X_LENGTH; k++) {
+                if (gems.get(BOARD_Y_LENGTH).get(k).getColor() == GemColor.NONE) {
+                    gems.get(BOARD_Y_LENGTH).set(k, Gem.randomGem());
                     generated++;
                 }
             }
@@ -218,7 +238,6 @@ public class Board {
         if (swapSlot.x >= 0 && swapSlot.y >= 0) {
             swapGem();
             ObjectSet<Match> matches = checkBoard();
-            matches = Match.processTShapes(matches);
 
             boolean broke = true;
             if (matches.size > 0) {
@@ -230,12 +249,11 @@ public class Board {
             }
             scoreIndicator.updateCombo(broke);
             lastMatchTime = TimeUtils.nanoTime();
-            System.out.println(lastMatchTime);
         }
+        // TODO: smoke logic + destroy/detonate special gems
         if (lastMatchTime != 0 && (lastMatchTime + 1000000000) <= TimeUtils.nanoTime()) {
             lastMatchTime = 0;
             ObjectSet<Match> matches = checkBoard();
-            matches = Match.processTShapes(matches);
             if (matches.size > 0) {
                 for (Match m : matches) {
                     scoreIndicator.updateScore(m.getScore());

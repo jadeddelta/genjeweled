@@ -32,6 +32,7 @@ public class Assets {
         manager.load("effects/selected.png", Texture.class);
         manager.load("effects/flame.png", Texture.class);
         manager.load("effects/lightning.png", Texture.class);
+        manager.load("effects/smoke.png", Texture.class);
 
         manager.load("elements/score-indicator/scoreBar.png", Texture.class);
         manager.load("elements/score-indicator/scoreFill.png", Texture.class);
@@ -121,6 +122,10 @@ public class Assets {
 
     public Texture getGemSelected() {
         return manager.get("effects/selected.png");
+    }
+
+    public Texture getSmoke() {
+        return manager.get("effects/smoke.png");
     }
 
     public Texture getScoreBar() {

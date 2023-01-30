@@ -12,6 +12,7 @@ public class ScoreIndicator {
     private int level;
     private int combo;
     private int comboProgress;
+    private int threshold;
 
     private Assets manager;
 
@@ -23,6 +24,7 @@ public class ScoreIndicator {
         this.combo = 1;
         this.comboProgress = 0;
         this.scoreCap = 2500;
+        this.threshold = 4;
 
         this.manager = manager;
 
@@ -37,7 +39,11 @@ public class ScoreIndicator {
         batch.draw(manager.getScoreFill(), min.x, min.y, 0, 0, 150, scoreHeight);
         batch.draw(manager.getScoreBar(), min.x, min.y, 150, 600);
         manager.getScoreText().draw(batch, "Score: " + aggregateScore, min.x, min.x + 600 + 100 + 5);
-        manager.getScoreText().draw(batch, "Combo: " + combo, min.x, min.y + 600 + 75);
+        manager.getScoreText().draw(
+                batch,
+                "Combo: " + combo + " | " + comboProgress + " / " + threshold,
+                min.x,
+                min.y + 600 + 75);
         manager.getScoreText().draw(batch, "Level: " + level, min.x, min.y + 600 + 50 - 5);
     }
 
@@ -56,44 +62,49 @@ public class ScoreIndicator {
     }
 
     public void updateCombo(boolean broke) {
-        if (broke && combo == 1)
-            return;
-        if (combo == 10)
-            return;
         if (broke) {
-            comboProgress = 0;
+            if (comboProgress >= 0) {
+                comboProgress = 0;
+                return;
+            }
+            if (combo == 1)
+                return;
             combo--;
         }
         else {
             comboProgress++;
-            int threshold = 4;
-            switch (combo) {
-                case 1:
-                    break;
-                case 2:
-                case 3:
-                    threshold = 6;
-                    break;
-                case 4:
-                case 5:
-                    threshold = 8;
-                    break;
-                case 6:
-                case 7:
-                    threshold = 12;
-                    break;
-                case 8:
-                case 9:
-                    threshold = 16;
-                    break;
-                case 10:
-                    threshold = 32;
-                    break;
-            }
-            if (comboProgress == threshold)
+            if (comboProgress == threshold) {
                 combo++;
+                comboProgress = 0;
+            }
         }
+        updateThreshold();
+    }
 
-
+    private void updateThreshold() {
+        switch (combo) {
+            case 1:
+                threshold = 4;
+                break;
+            case 2:
+            case 3:
+                threshold = 6;
+                break;
+            case 4:
+            case 5:
+                threshold = 8;
+                break;
+            case 6:
+            case 7:
+                threshold = 12;
+                break;
+            case 8:
+            case 9:
+                threshold = 16;
+                break;
+            case 10:
+                threshold = 32;
+                break;
+        }
     }
 }

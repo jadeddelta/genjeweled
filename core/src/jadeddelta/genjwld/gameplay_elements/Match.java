@@ -7,14 +7,14 @@ import com.badlogic.gdx.utils.StringBuilder;
 
 public class Match {
 
-    private Array<GridPoint2> gemSlots;
+    private final Array<GridPoint2> gemSlots;
 
     private boolean valid;
-    private MatchType matchType;
+    private final MatchType matchType;
     private GemEnhancement gemEnhancement;
     private GemColor gemColor;
 
-    private int BASE_SCORE = 50;
+    private final int BASE_SCORE = 50;
 
     public Match(MatchType matchType) {
         gemSlots = new Array<>(true, 16);
