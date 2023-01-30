@@ -216,8 +216,8 @@ public class Board {
                 }
             }
             for (int k = 0; k < BOARD_X_LENGTH; k++) {
-                if (gems.get(BOARD_Y_LENGTH).get(k).getColor() == GemColor.NONE) {
-                    gems.get(BOARD_Y_LENGTH).set(k, Gem.randomGem());
+                if (gems.get(BOARD_Y_LENGTH - 1).get(k).getColor() == GemColor.NONE) {
+                    gems.get(BOARD_Y_LENGTH - 1).set(k, Gem.randomGem());
                     generated++;
                 }
             }
