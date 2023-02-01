@@ -20,7 +20,6 @@ public class SplashScreen implements Screen {
         this.splashFill = new Texture(Gdx.files.internal("splash/splashFill.png"));
     }
 
-
     @Override
     public void show() {
 
@@ -37,16 +36,15 @@ public class SplashScreen implements Screen {
         else {
             float progress = game.manager.getProgress();
             int barPortion = (int) (128 * progress);
-            System.out.println(barPortion);
+            int limitPortion = (int) (500 * progress);
 
             game.batch.begin();
             game.batch.disableBlending();
             game.batch.draw(splashBg, 0, 0, 1600, 900);
             game.batch.enableBlending();
-            //FIXME: this does not work as indended, just getting something out before midnight!
             game.batch.draw(splashFill,
                     100, 500,
-                    500, 250,
+                    limitPortion, 250,
                     0, 0,
                     barPortion, 64,
                     false, false);
@@ -78,5 +76,7 @@ public class SplashScreen implements Screen {
     @Override
     public void dispose() {
         splashBg.dispose();
+        splashBar.dispose();
+        splashFill.dispose();
     }
 }

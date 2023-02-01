@@ -134,9 +134,9 @@ public class Board {
         GemColor currentColor;
         Match possibleMatch = new Match(MatchType.HORIZONTAL);
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < BOARD_Y_LENGTH; i++) {
             currentColor = gems.get(i).get(0).getColor();
-            for (int j = 0; j < 8; j++) {
+            for (int j = 0; j < BOARD_X_LENGTH; j++) {
                 GemColor check = gems.get(i).get(j).getColor();
                 if (check == currentColor) {
                     possibleMatch.setGemColor(currentColor);
@@ -153,11 +153,11 @@ public class Board {
         }
 
         possibleMatch = new Match(MatchType.VERTICAL);
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < BOARD_Y_LENGTH; i++) {
             currentColor = gems.get(0).get(i).getColor();
-            for (int j = 0; j < 8; j++) {
+            for (int j = 0; j < BOARD_X_LENGTH; j++) {
                 GemColor check = gems.get(j).get(i).getColor();
-                if (check == currentColor) {
+                if (check == currentColor && check != GemColor.NONE) {
                     possibleMatch.setGemColor(currentColor);
                     if (possibleMatch.addSlot(new GridPoint2(i, j)))
                         matches.add(possibleMatch);

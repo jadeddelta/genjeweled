@@ -18,6 +18,9 @@ public class Assets {
 
     public Assets() {
         manager = new AssetManager();
+        FileHandleResolver resolver = new InternalFileHandleResolver();
+        manager.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
+        manager.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(resolver));
     }
 
     public void load() {
@@ -36,10 +39,6 @@ public class Assets {
 
         manager.load("elements/score-indicator/scoreBar.png", Texture.class);
         manager.load("elements/score-indicator/scoreFill.png", Texture.class);
-
-        FileHandleResolver resolver = new InternalFileHandleResolver();
-        manager.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
-        manager.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(resolver));
 
         FreetypeFontLoader.FreeTypeFontLoaderParameter mainTitleFont =
                 new FreetypeFontLoader.FreeTypeFontLoaderParameter();
@@ -143,4 +142,5 @@ public class Assets {
     public float getProgress() {
         return manager.getProgress();
     }
+
 }
