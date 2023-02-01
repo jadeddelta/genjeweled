@@ -139,4 +139,8 @@ public class Assets {
     public boolean update() {
         return manager.update();
     }
+
+    public float getProgress() {
+        return manager.getProgress();
+    }
 }
