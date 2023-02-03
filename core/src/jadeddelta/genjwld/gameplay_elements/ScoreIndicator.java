@@ -63,7 +63,7 @@ public class ScoreIndicator {
 
     public void updateCombo(boolean broke) {
         if (broke) {
-            if (comboProgress >= 0) {
+            if (comboProgress > 0) {
                 comboProgress = 0;
                 return;
             }

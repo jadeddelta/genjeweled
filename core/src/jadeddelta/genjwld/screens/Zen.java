@@ -15,13 +15,10 @@ import jadeddelta.genjwld.gameplay_elements.Board;
  */
 public class Zen implements Screen {
     final GenjeweledGame game;
-    OrthographicCamera camera;
     Board board;
 
     public Zen(GenjeweledGame game) {
         this.game = game;
-        camera = new OrthographicCamera();
-        camera.setToOrtho(false, 1600, 900);
         this.board = Board.defaultBoard(game.manager);
 
         Gdx.input.setInputProcessor(new GemInputProcessor(board));
@@ -35,8 +32,9 @@ public class Zen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(Color.BLACK);
-        camera.update();
-        game.batch.setProjectionMatrix(camera.combined);
+        game.camera.update();
+        game.batch.setTransformMatrix(game.camera.view);
+        game.batch.setProjectionMatrix(game.camera.projection);
 
         game.batch.begin();
         board.render(delta, game.batch);

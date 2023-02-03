@@ -3,11 +3,13 @@ package jadeddelta.genjwld;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.math.Vector3;
 import jadeddelta.genjwld.gameplay_elements.Board;
 
 public class GemInputProcessor implements InputProcessor {
 
     private Board board;
+    private Vector3 tp = new Vector3();
 
     public GemInputProcessor(Board board) {
         this.board = board;
@@ -31,6 +33,7 @@ public class GemInputProcessor implements InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         int adjustY = Gdx.graphics.getHeight() - screenY;
+
         if (button == Input.Buttons.LEFT) {
             board.selectGem(screenX, adjustY);
         }
