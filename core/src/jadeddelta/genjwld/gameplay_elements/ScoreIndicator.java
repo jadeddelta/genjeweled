@@ -1,6 +1,5 @@
 package jadeddelta.genjwld.gameplay_elements;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.GridPoint2;
 import jadeddelta.genjwld.data.Assets;
 
@@ -16,35 +15,20 @@ public class ScoreIndicator {
 
     private Assets manager;
 
-    private GridPoint2 min, max;
+    private GridPoint2 min;
+    private int width, height;
 
-    public ScoreIndicator(int boardX, int boardY, Assets manager) {
+    public ScoreIndicator(int boardX, int boardY, int spacing) {
         this.score = 0;
-        this.level = 0;
+        this.level = 1;
         this.combo = 1;
         this.comboProgress = 0;
         this.scoreCap = 2500;
         this.threshold = 4;
 
-        this.manager = manager;
-
-        this.min = new GridPoint2(boardX - 200 - 150, boardY);
-    }
-
-    public void render(float delta, SpriteBatch batch) {
-        // load portion of texture from sprite max x -> sprite min x + (maxX-minX) * (currentScore / scoreCap)
-        // render is called irrespective of board state
-
-        int scoreHeight = (int) (600 * ((double) score / scoreCap));
-        batch.draw(manager.getScoreFill(), min.x, min.y, 0, 0, 150, scoreHeight);
-        batch.draw(manager.getScoreBar(), min.x, min.y, 150, 600);
-        manager.getScoreText().draw(batch, "Score: " + aggregateScore, min.x, min.x + 600 + 100 + 5);
-        manager.getScoreText().draw(
-                batch,
-                "Combo: " + combo + " | " + comboProgress + " / " + threshold,
-                min.x,
-                min.y + 600 + 75);
-        manager.getScoreText().draw(batch, "Level: " + level, min.x, min.y + 600 + 50 - 5);
+        this.width = 150;
+        this.height = 600;
+        this.min = new GridPoint2(boardX - width - spacing, boardY);
     }
 
     public void checkLevelUp() {
@@ -70,15 +54,16 @@ public class ScoreIndicator {
             if (combo == 1)
                 return;
             combo--;
+            updateThreshold();
         }
         else {
             comboProgress++;
             if (comboProgress == threshold) {
                 combo++;
                 comboProgress = 0;
+                updateThreshold();
             }
         }
-        updateThreshold();
     }
 
     private void updateThreshold() {
@@ -106,5 +91,49 @@ public class ScoreIndicator {
                 threshold = 32;
                 break;
         }
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public int getAggregateScore() {
+        return aggregateScore;
+    }
+
+    public int getCombo() {
+        return combo;
+    }
+
+    public int getComboProgress() {
+        return comboProgress;
+    }
+
+    public int getThreshold() {
+        return threshold;
+    }
+
+    public GridPoint2 getMin() {
+        return min;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getScoreHeight() {
+        System.out.println(height);
+        System.out.println(score);
+        System.out.println(scoreCap);
+        System.out.println((int) (height * ((double) score / scoreCap)) + "a");
+        return (int) (height * ((double) score / scoreCap));
     }
 }

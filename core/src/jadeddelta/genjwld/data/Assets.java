@@ -40,6 +40,8 @@ public class Assets {
         manager.load("elements/score-indicator/scoreBar.png", Texture.class);
         manager.load("elements/score-indicator/scoreFill.png", Texture.class);
 
+        manager.load("bgs/bg1.png", Texture.class);
+
         FreetypeFontLoader.FreeTypeFontLoaderParameter mainTitleFont =
                 new FreetypeFontLoader.FreeTypeFontLoaderParameter();
         mainTitleFont.fontFileName = "fonts/oxygen.ttf";
@@ -133,6 +135,13 @@ public class Assets {
 
     public Texture getScoreFill() {
         return manager.get("elements/score-indicator/scoreFill.png");
+    }
+
+    public Texture getBg(int num) {
+        StringBuilder ret = new StringBuilder("bgs/bg");
+        ret.append(num);
+        ret.append(".png");
+        return manager.get(ret.toString());
     }
 
     public boolean update() {

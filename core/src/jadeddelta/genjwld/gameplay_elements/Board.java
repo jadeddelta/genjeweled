@@ -1,14 +1,9 @@
 package jadeddelta.genjwld.gameplay_elements;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectSet;
-import com.badlogic.gdx.utils.TimeUtils;
-import jadeddelta.genjwld.data.Assets;
-
-import java.util.Iterator;
+import jadeddelta.genjwld.data.BoardProperties;
 
 public class Board {
 
@@ -16,38 +11,20 @@ public class Board {
 
     private GridPoint2 selectSlot, swapSlot;
 
-    // TODO: eventually turn this into customizable board logic
-    // thoughts- make this into a "preferences" or whatnot, map?
-    private final int BOARD_X_LENGTH = 8;
-    private final int BOARD_Y_LENGTH = 8;
-    private final int SLOT_DIM = 75;
-
-    private final GridPoint2 min, center, max;
-
-    public final ScoreIndicator scoreIndicator;
-    private Assets manager;
+    private BoardProperties props;
 
     private Array<GridPoint2> smokedGems = new Array<>();
     private long smokeTime = 0;
 
-
     private long lastMatchTime;
 
-    public Board(Array<Array<Gem>> gems, GridPoint2 center, Assets manager) {
+    public Board(Array<Array<Gem>> gems, BoardProperties props) {
         this.gems = gems;
 
-        this.center = center;
-        int width = BOARD_X_LENGTH * SLOT_DIM;
-        int height = BOARD_Y_LENGTH * SLOT_DIM;
-        this.min = new GridPoint2(center.x - width/2, center.y - height/2);
-        this.max = new GridPoint2(center.x + width/2, center.y + width/2);
+        this.props = props;
 
         selectSlot = new GridPoint2(-1, -1);
         swapSlot = new GridPoint2(-1, -1);
-
-        this.manager = manager;
-
-        this.scoreIndicator = new ScoreIndicator(min.x, min.y, manager);
 
         this.lastMatchTime = 0;
     }
@@ -56,7 +33,7 @@ public class Board {
      * Generates the default 8x8 board used for most games.
      * @return a default board with randomized gems with no possible matches
      */
-    public static Board defaultBoard(Assets manager) {
+    public static Board defaultBoard() {
         while (true) {
             Array<Array<Gem>> gems = new Array<>(true, 8);
             Board b;
@@ -67,7 +44,7 @@ public class Board {
                 }
                 gems.add(gemArray);
             }
-            b = new Board(gems, new GridPoint2(1600/2, 900/2), manager);
+            b = new Board(gems, new BoardProperties());
             if (b.checkBoard().size == 0)
                 return b;
         }
@@ -80,10 +57,12 @@ public class Board {
      * @param y the y coordinate of the mouse click
      */
     public void selectGem(int x, int y) {
+        GridPoint2 min = props.getBottomLeftCorner();
+        GridPoint2 max = props.getTopRightCorner();
         if ((x > min.x && y > min.y)
                 && (x < max.x && y < max.y)) {
-            int selectedX = (x - min.x) / SLOT_DIM;
-            int selectedY = (y - min.y) / SLOT_DIM;
+            int selectedX = (x - min.x) / props.getSlotDiameter();
+            int selectedY = (y - min.y) / props.getSlotDiameter();
 
             if (selectSlot.x == selectedX && selectSlot.y == selectedY) {
                 swapSlot.x = -1;
@@ -134,9 +113,9 @@ public class Board {
         GemColor currentColor;
         Match possibleMatch = new Match(MatchType.HORIZONTAL);
 
-        for (int i = 0; i < BOARD_Y_LENGTH; i++) {
+        for (int i = 0; i < props.getBoardY(); i++) {
             currentColor = gems.get(i).get(0).getColor();
-            for (int j = 0; j < BOARD_X_LENGTH; j++) {
+            for (int j = 0; j < props.getBoardX(); j++) {
                 GemColor check = gems.get(i).get(j).getColor();
                 if (check == currentColor) {
                     possibleMatch.setGemColor(currentColor);
@@ -153,9 +132,9 @@ public class Board {
         }
 
         possibleMatch = new Match(MatchType.VERTICAL);
-        for (int i = 0; i < BOARD_Y_LENGTH; i++) {
+        for (int i = 0; i < props.getBoardY(); i++) {
             currentColor = gems.get(0).get(i).getColor();
-            for (int j = 0; j < BOARD_X_LENGTH; j++) {
+            for (int j = 0; j < props.getBoardX(); j++) {
                 GemColor check = gems.get(j).get(i).getColor();
                 if (check == currentColor && check != GemColor.NONE) {
                     possibleMatch.setGemColor(currentColor);
@@ -203,8 +182,8 @@ public class Board {
         while (replaced > 0 && generated > 0) {
             replaced = 0;
             generated = 0;
-            for (int i = 0; i < BOARD_Y_LENGTH - 1; i++) {
-                for (int j = 0; j < BOARD_X_LENGTH; j++) {
+            for (int i = 0; i < props.getBoardY() - 1; i++) {
+                for (int j = 0; j < props.getBoardX(); j++) {
                     Gem bottom = gems.get(i).get(j).clone();
                     if (bottom.getColor() == GemColor.NONE) {
                         Gem top = gems.get(i+1).get(j).clone();
@@ -215,67 +194,32 @@ public class Board {
                     }
                 }
             }
-            for (int k = 0; k < BOARD_X_LENGTH; k++) {
-                if (gems.get(BOARD_Y_LENGTH - 1).get(k).getColor() == GemColor.NONE) {
-                    gems.get(BOARD_Y_LENGTH - 1).set(k, Gem.randomGem());
+            for (int k = 0; k < props.getBoardX(); k++) {
+                if (gems.get(props.getBoardY() - 1).get(k).getColor() == GemColor.NONE) {
+                    gems.get(props.getBoardY() - 1).set(k, Gem.randomGem());
                     generated++;
                 }
             }
         }
     }
 
-    public void render(float delta, SpriteBatch batch) {
-        if (selectSlot.x >= 0 && selectSlot.y >= 0) {
-            batch.disableBlending();
-            batch.draw(
-                    manager.getGemSelected(),
-                    min.x + (selectSlot.x * SLOT_DIM),
-                    min.y + (selectSlot.y * SLOT_DIM),
-                    SLOT_DIM,
-                    SLOT_DIM);
-            batch.enableBlending();
-        }
-        if (swapSlot.x >= 0 && swapSlot.y >= 0) {
-            swapGem();
-            ObjectSet<Match> matches = checkBoard();
+    public Array<Array<Gem>> getGems() {
+        return gems;
+    }
 
-            boolean broke = true;
-            if (matches.size > 0) {
-                broke = false;
-                for (Match m : matches) {
-                    scoreIndicator.updateScore(m.getScore());
-                }
-                removeMatchedGems(matches);
-            }
-            scoreIndicator.updateCombo(broke);
-            lastMatchTime = TimeUtils.nanoTime();
-        }
-        // TODO: smoke logic + destroy/detonate special gems
-        if (lastMatchTime != 0 && (lastMatchTime + 1000000000) <= TimeUtils.nanoTime()) {
-            lastMatchTime = 0;
-            ObjectSet<Match> matches = checkBoard();
-            if (matches.size > 0) {
-                for (Match m : matches) {
-                    scoreIndicator.updateScore(m.getScore());
-                }
-                removeMatchedGems(matches);
-            }
-        }
+    public BoardProperties getProps() {
+        return props;
+    }
 
-        int x = min.x;
-        int y = min.y;
-        for (Iterator<Array<Gem>> iter = gems.iterator() ; iter.hasNext();) {
-            for (Gem gem : iter.next()) {
-                Texture gemTexture = manager.getGemTexture(gem.getColor());
-                batch.draw(gemTexture, x, y, SLOT_DIM, SLOT_DIM);
-                Texture gemEffect = manager.getGemEffects(gem.getEnhancement());
-                if (gemEffect != null)
-                    batch.draw(gemEffect, x, y, SLOT_DIM, SLOT_DIM);
-                x += SLOT_DIM;
-            }
-            y += SLOT_DIM;
-            x = min.x;
-        }
+    public GridPoint2 getSelectSlot() {
+        return selectSlot;
+    }
 
+    public boolean isSelected() {
+        return (selectSlot.x >= 0 && selectSlot.y >= 0);
+    }
+
+    public boolean isSwappable() {
+        return (swapSlot.x >= 0 && selectSlot.y >= 0);
     }
 }
