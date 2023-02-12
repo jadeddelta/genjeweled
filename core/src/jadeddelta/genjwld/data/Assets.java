@@ -41,6 +41,10 @@ public class Assets {
         manager.load("elements/score-indicator/scoreFill.png", Texture.class);
 
         manager.load("bgs/bg1.png", Texture.class);
+        manager.load("bgs/bg2.png", Texture.class);
+        manager.load("bgs/bg3.png", Texture.class);
+        manager.load("bgs/bg4.png", Texture.class);
+        manager.load("bgs/bg5.png", Texture.class);
 
         FreetypeFontLoader.FreeTypeFontLoaderParameter mainTitleFont =
                 new FreetypeFontLoader.FreeTypeFontLoaderParameter();

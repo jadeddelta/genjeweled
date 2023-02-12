@@ -14,9 +14,6 @@ public class Board {
     private BoardProperties props;
 
     private Array<GridPoint2> smokedGems = new Array<>();
-    private long smokeTime = 0;
-
-    private long lastMatchTime;
 
     public Board(Array<Array<Gem>> gems, BoardProperties props) {
         this.gems = gems;
@@ -25,8 +22,6 @@ public class Board {
 
         selectSlot = new GridPoint2(-1, -1);
         swapSlot = new GridPoint2(-1, -1);
-
-        this.lastMatchTime = 0;
     }
 
     /**

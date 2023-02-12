@@ -1,10 +1,8 @@
 package jadeddelta.genjwld;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector3;
-import jadeddelta.genjwld.gameplay_elements.Board;
 import jadeddelta.genjwld.screens.GameScreen;
 
 public class GemInputProcessor implements InputProcessor {
@@ -35,14 +33,11 @@ public class GemInputProcessor implements InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (button != Input.Buttons.LEFT || pointer > 0)
             return false;
-        int adjustY = Gdx.graphics.getHeight() - screenY;
         tp = screen.unproject(tp.set(screenX, screenY, 0));
 
+        // TODO: doesn't exactly work on resize, but we'll figure something out
+        screen.board.selectGem((int)tp.x, (int)tp.y);
 
-
-        if (button == Input.Buttons.LEFT) {
-            screen.board.selectGem(screenX, adjustY);
-        }
         return false;
     }
 

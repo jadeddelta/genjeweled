@@ -59,7 +59,8 @@ public abstract class GameScreen implements Screen {
     }
 
     private void renderBg() {
-        background = game.manager.getBg(1);
+        int bgLevel = (scoreIndicator.getLevel() % 5) + 1;
+        background = game.manager.getBg(bgLevel);
         game.batch.disableBlending();
         game.batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         game.batch.enableBlending();

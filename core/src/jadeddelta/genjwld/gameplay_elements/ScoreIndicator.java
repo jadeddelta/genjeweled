@@ -13,8 +13,6 @@ public class ScoreIndicator {
     private int comboProgress;
     private int threshold;
 
-    private Assets manager;
-
     private GridPoint2 min;
     private int width, height;
 
@@ -130,10 +128,6 @@ public class ScoreIndicator {
     }
 
     public int getScoreHeight() {
-        System.out.println(height);
-        System.out.println(score);
-        System.out.println(scoreCap);
-        System.out.println((int) (height * ((double) score / scoreCap)) + "a");
         return (int) (height * ((double) score / scoreCap));
     }
 }
