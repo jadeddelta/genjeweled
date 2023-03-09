@@ -13,7 +13,6 @@ public class Board {
 
     private BoardProperties props;
 
-    private Array<GridPoint2> smokedGems = new Array<>();
 
     public Board(Array<Array<Gem>> gems, BoardProperties props) {
         this.gems = gems;
@@ -88,6 +87,15 @@ public class Board {
     public void swapGem() {
         Gem selectedGem = gems.get(selectSlot.y).get(selectSlot.x);
         Gem swapGem = gems.get(swapSlot.y).get(swapSlot.x);
+        GridPoint2 selectPos = new GridPoint2(
+                selectSlot.x * props.getSlotDiameter() + props.getBottomLeftCorner().x,
+                selectSlot.y * props.getSlotDiameter() + props.getBottomLeftCorner().y);
+        GridPoint2 swapPos = new GridPoint2(
+                swapSlot.x * props.getSlotDiameter() + props.getBottomLeftCorner().x,
+                swapSlot.y * props.getSlotDiameter() + props.getBottomLeftCorner().y);
+
+        selectedGem.putInMotion(selectPos, swapPos);
+        swapGem.putInMotion(swapPos, selectPos);
 
         gems.get(swapSlot.y).set(swapSlot.x, selectedGem);
         gems.get(selectSlot.y).set(selectSlot.x, swapGem);
@@ -112,7 +120,7 @@ public class Board {
             currentColor = gems.get(i).get(0).getColor();
             for (int j = 0; j < props.getBoardX(); j++) {
                 GemColor check = gems.get(i).get(j).getColor();
-                if (check == currentColor) {
+                if (check == currentColor && check != GemColor.NONE && !gems.get(i).get(j).isInTransit()) {
                     possibleMatch.setGemColor(currentColor);
                     if (possibleMatch.addSlot(new GridPoint2(j, i)))
                         matches.add(possibleMatch);
@@ -131,7 +139,7 @@ public class Board {
             currentColor = gems.get(0).get(i).getColor();
             for (int j = 0; j < props.getBoardX(); j++) {
                 GemColor check = gems.get(j).get(i).getColor();
-                if (check == currentColor && check != GemColor.NONE) {
+                if (check == currentColor && check != GemColor.NONE && !gems.get(j).get(i).isInTransit()) {
                     possibleMatch.setGemColor(currentColor);
                     if (possibleMatch.addSlot(new GridPoint2(i, j)))
                         matches.add(possibleMatch);
@@ -171,10 +179,10 @@ public class Board {
      * new ones.
      */
     public void update() {
-        int replaced = 1;
-        int generated = 1;
+        int replaced;
+        int generated;
 
-        while (replaced > 0 && generated > 0) {
+        do {
             replaced = 0;
             generated = 0;
             for (int i = 0; i < props.getBoardY() - 1; i++) {
@@ -195,7 +203,7 @@ public class Board {
                     generated++;
                 }
             }
-        }
+        } while (replaced > 0 && generated > 0);
     }
 
     public Array<Array<Gem>> getGems() {

@@ -52,7 +52,7 @@ public abstract class GameScreen implements Screen {
 
         game.batch.begin();
         renderBg();
-        renderBoard();
+        renderBoard(delta);
         renderIndicator();
         renderAnnouncer();
         game.batch.end();
@@ -66,7 +66,7 @@ public abstract class GameScreen implements Screen {
         game.batch.enableBlending();
     }
 
-    private void renderBoard() {
+    private void renderBoard(float delta) {
         BoardProperties props = board.getProps();
         GridPoint2 min = props.getBottomLeftCorner();
         if (board.isSelected()) {
@@ -84,24 +84,14 @@ public abstract class GameScreen implements Screen {
             ObjectSet<Match> matches = board.checkBoard();
 
             boolean broke = (matches.size == 0);
-            if (!broke) {
-                for (Match m : matches)
-                    scoreIndicator.updateScore(m.getScore());
-                board.removeMatchedGems(matches);
-            }
+            handleMatches(matches);
             scoreIndicator.updateCombo(broke);
             lastMatchTime = TimeUtils.nanoTime();
         }
 
         if (lastMatchTime != 0 && (lastMatchTime + 1000000000) <= TimeUtils.nanoTime()) {
             lastMatchTime = 0;
-            ObjectSet<Match> matches = board.checkBoard();
-            if (matches.size > 0) {
-                for (Match m : matches) {
-                    scoreIndicator.updateScore(m.getScore());
-                }
-                board.removeMatchedGems(matches);
-            }
+            handleMatches(board.checkBoard());
         }
 
         int x = min.x;
@@ -109,12 +99,24 @@ public abstract class GameScreen implements Screen {
         Array<Array<Gem>> gems = board.getGems();
         for (Iterator<Array<Gem>> iter = gems.iterator(); iter.hasNext();) {
             for (Gem gem : iter.next()) {
+                int gemX = x;
+                int gemY = y;
+                if (gem.isInTransit()) {
+                    GridPoint2 gemPos = gem.getCurrentPosition();
+                    gemX = gemPos.x;
+                    gemY = gemPos.y;
+                }
+
                 Texture gemTexture = game.manager.getGemTexture(gem.getColor());
-                game.batch.draw(gemTexture, x, y, props.getSlotDiameter(), props.getSlotDiameter());
+                game.batch.draw(gemTexture, gemX, gemY, props.getSlotDiameter(), props.getSlotDiameter());
+
                 Texture gemEffect = game.manager.getGemEffects(gem.getEnhancement());
                 if (gemEffect != null)
-                    game.batch.draw(gemEffect, x, y, props.getSlotDiameter(), props.getSlotDiameter());
+                    game.batch.draw(gemEffect, gemX, gemY, props.getSlotDiameter(), props.getSlotDiameter());
                 x += props.getSlotDiameter();
+                if (gem.move(delta)) {
+                    handleMatches(board.checkBoard());
+                }
             }
             y += props.getSlotDiameter();
             x = min.x;
@@ -141,6 +143,14 @@ public abstract class GameScreen implements Screen {
 
     private void renderAnnouncer() {
 
+    }
+
+    private void handleMatches(ObjectSet<Match> matches) {
+        if (matches.size > 0) {
+            for (Match m : matches)
+                scoreIndicator.updateScore(m.getScore());
+            board.removeMatchedGems(matches);
+        }
     }
 
     public Vector3 unproject(Vector3 v) {
