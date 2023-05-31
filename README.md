@@ -22,8 +22,7 @@ me directly if you have any concerns.
 
 ### development
 
-i've tried to push out a commit per day, but on long days like refactoring 
-or adding big things, it'll probably take longer. either way, this'll be in 
-development for the foreseeable future (at least for my 100 days of coding 
-challenge)
+this is on hiatus until i can get my life together and try to make some time for 
+this here and there, i've learned a lot since i've last worked on this and i
+want to try and apply these new concepts here. :)
 
